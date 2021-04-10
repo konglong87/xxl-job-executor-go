@@ -21,8 +21,8 @@ package main
 
 import (
 	"fmt"
-	xxl "github.com/xxl-job/xxl-job-executor-go"
-	"github.com/xxl-job/xxl-job-executor-go/example/task"
+	xxl "github.com/konglong87/xxl-job-executor-go"
+	"github.com/konglong87/xxl-job-executor-go/example/task"
 	"log"
 )
 
@@ -64,7 +64,7 @@ func (l *logger) Error(format string, a ...interface{}) {
 }
 ```
 # 示例项目
-github.com/xxl-job/xxl-job-executor-go/example/
+github.com/konglong87/xxl-job-executor-go/example/
 # 与gin框架集成
 https://github.com/gin-middleware/xxl-job-executor
 # xxl-job-admin配置
