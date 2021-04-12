@@ -30,6 +30,8 @@ type Executor interface {
 	TaskLog(writer http.ResponseWriter, request *http.Request)
 	//运行服务
 	Run() error
+	//动态增加一个任务
+	AddJob(taskInfo AddJobInfo)([]byte, error)
 }
 
 //创建执行器

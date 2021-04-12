@@ -35,6 +35,15 @@ const (
 	ShardingBroadcastExecutorRouteStrategyType ExecutorRouteStrategyType = "SHARDING_BROADCAST"
 )
 
+//阻塞处理策略
+type ExecutorBlockStrategy string
+
+const (
+	SerialExecutionBlockStrategy ExecutorBlockStrategy = "SERIAL_EXECUTION" //单机串行
+	DiscardLaterBlockStrategy    ExecutorBlockStrategy = "DISCARD_LATER"    //丢弃后续调度
+	CoverEarlyBlockStrategy      ExecutorBlockStrategy = "COVER_EARLY"      //覆盖之前调度
+)
+
 //{
 //		"jobGroup": 45,
 //		"jobDesc": "测试02addInfo03",
@@ -64,7 +73,7 @@ type AddJobInfo struct {
 	AlarmEmail             string                    `json:"alarmEmail"`             //提醒邮件
 	ExecutorHandler        string                    `json:"executorHandler"`        //任务标识
 	ExecutorParams         string                    `json:"executorParam"`          // 任务参数
-	ExecutorBlockStrategy  string                    `json:"executorBlockStrategy"`  // 任务阻塞策略
+	ExecutorBlockStrategy  ExecutorBlockStrategy     `json:"executorBlockStrategy"`  // 任务阻塞策略
 	ExecutorTimeout        int64                     `json:"executorTimeout"`        // 任务超时时间，单位秒，大于零时生效
 	ExecutorFailRetryCount int64                     `json:"executorFailRetryCount"` // 任务超时重试次数
 	GlueType               string                    `json:"glueType"`               // 任务模式，可选值参考 com.xxl.job.core.glue.GlueTypeEnum
@@ -72,8 +81,17 @@ type AddJobInfo struct {
 	GlueRemark             string                    `json:"glueRemark"`             // GLUE脚本标注
 }
 
+//	"code": 200,
+//	"msg": null,
+//	"content": null
+type RespAddJob struct {
+	Code    int    `json:"code"`
+	Msg     string `json:"msg"`
+	Content string `json:"content"`
+}
+
 //动态增加一个任务
-func (e *executor) AddJob(taskInfo AddJobInfo) {
+func (e *executor) AddJob(taskInfo AddJobInfo) (respBody []byte, err error) {
 	param, err := json.Marshal(taskInfo)
 	if err != nil {
 		e.log.Error("[err]AddJob:" + err.Error())
@@ -87,8 +105,10 @@ func (e *executor) AddJob(taskInfo AddJobInfo) {
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		e.log.Error("[err]AddJob: ReadAll err : ", err.Error())
+		return
 	}
 	e.log.Info("任务增加成功:" + string(body))
+	return body, err
 }
 
 //停止一个任务
