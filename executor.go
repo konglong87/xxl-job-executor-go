@@ -3,6 +3,7 @@ package xxl
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -85,6 +86,9 @@ func (e *executor) Run() (err error) {
 	mux.HandleFunc("/run", e.runTask)
 	mux.HandleFunc("/kill", e.killTask)
 	mux.HandleFunc("/log", e.taskLog)
+	mux.HandleFunc("/ppp", e.TestPanic)
+	mux.HandleFunc("/pan", e.TestPanic2)
+	mux.HandleFunc("/", e.TestResp)
 	// 创建服务器
 	server := &http.Server{
 		Addr:         e.address,
@@ -311,4 +315,23 @@ func (e *executor) KillTask(writer http.ResponseWriter, request *http.Request) {
 //taskLog
 func (e *executor) TaskLog(writer http.ResponseWriter, request *http.Request) {
 	e.taskLog(writer, request)
+}
+
+
+//taskLog
+func (e *executor) TestPanic(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("进来了")
+	panic("........test what will happen.....")
+}
+
+func (e *executor) TestPanic2(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("进来了")
+	go func() {
+		panic("........test what will happen.....")
+	}()
+}
+
+func (e *executor) TestResp(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("this is TestResp")
+	writer.Write([]byte(" xxl ok "))
 }
