@@ -96,7 +96,7 @@ func (e *executor) Run() (err error) {
 		Handler:      mux,
 	}
 	// 监听端口并提供服务
-	e.log.Info("Starting server at " + e.address)
+	e.log.Info("[xxl-job-go] Starting server at listening: " + e.address)
 	go server.ListenAndServe()
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGTERM)
@@ -320,18 +320,28 @@ func (e *executor) TaskLog(writer http.ResponseWriter, request *http.Request) {
 
 //taskLog
 func (e *executor) TestPanic(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("进来了")
-	panic("........test what will happen.....")
+	fmt.Println("[TestPanic]进来了")
+	panic("....TestPanic....test what will happen.....")
 }
 
 func (e *executor) TestPanic2(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("进来了")
+	fmt.Println("[TestPanic2]进来了")
 	go func() {
-		panic("........test what will happen.....")
+		panic("....TestPanic2....test what will happen.....")
 	}()
 }
 
 func (e *executor) TestResp(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("this is TestResp")
-	writer.Write([]byte(" xxl ok "))
+	req, _ := ioutil.ReadAll(request.Body)
+	fmt.Println("[TestResp] request body-->", string(req))
+	param := &RunReq{}
+	err := json.Unmarshal(req, &param)
+	if err != nil {
+		_, _ = writer.Write(returnCall(param, 500, "params err"))
+		e.log.Error("参数解析错误:" + string(req))
+		return
+	}
+	e.log.Info("[TestResp] 任务参数:%v", param)
+	fmt.Println("[TestResp]this is TestResp, uri=",request.RequestURI)
+	writer.Write([]byte("[TestResp] xxl ok "))
 }
