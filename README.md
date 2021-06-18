@@ -1,4 +1,4 @@
-# xxl-job-executor-go
+# xxl-job-executor-go（支持增删执行任务）
 很多公司java与go开发共存，java中有xxl-job做为任务调度引擎，
 为此出现了go执行器(客户端)，使用起来比较简单：
 
