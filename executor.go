@@ -221,10 +221,14 @@ func (e *executor) registry() {
 		RegistryKey:   e.opts.RegistryKey,
 		RegistryValue: "http://" + e.address,
 	}
+	if e.opts.AccessToken != ""{
+		req.AccessToken = e.opts.AccessToken
+	}
 	param, err := json.Marshal(req)
 	if err != nil {
 		log.Fatal("执行器注册信息解析失败:" + err.Error())
 	}
+	fmt.Println("[注册xxl-job参数]", string(param))
 	for {
 		<-t.C
 		t.Reset(time.Second * time.Duration(20)) //20秒心跳防止过期

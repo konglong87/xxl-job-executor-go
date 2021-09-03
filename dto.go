@@ -13,6 +13,7 @@ type Registry struct {
 	RegistryGroup string `json:"registryGroup"`
 	RegistryKey   string `json:"registryKey"`
 	RegistryValue string `json:"registryValue"`
+	AccessToken   string `json:"accessToken"`
 }
 
 //执行器执行完任务后，回调任务结果时使用
