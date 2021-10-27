@@ -141,7 +141,7 @@ func (e *executor) StopJob(jobID int) {
 }
 
 //启动一个任务
-func (e *executor) StartJob(jobID int) {
+func (e *executor) StartJob(jobID string) {
 	res, err := e.postForm(StartJobPath, map[string]interface{}{"id": fmt.Sprint(jobID)})
 	if err != nil {
 		e.log.Error("[err]StartJob err : ", err.Error())
