@@ -2,12 +2,21 @@ package xxl
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/fatih/structs"
 	"io/ioutil"
 )
 
-const (
-	addJobPath  = "/unauth/job/add"
-	stopJobPath = "/unauth/job/stop"
+var jobPathPrefix string = "/xxl-job-new/jobinfo"
+
+func SetJobPathPrefix(pathDefault string) {
+	jobPathPrefix = pathDefault
+}
+
+var (
+	addJobPath   = jobPathPrefix + "/add"
+	stopJobPath  = jobPathPrefix + "/stop"
+	StartJobPath = jobPathPrefix + "/start"
 )
 
 type ExecutorRouteStrategyType string
@@ -64,21 +73,22 @@ const (
 //}
 type AddJobInfo struct {
 	JobGroupID             int                       `json:"jobGroup"`               //任务组id
-	JobDesc                string                    `json:"jobDesc"`                //任务描述
-	ExecutorRouteStrategy  ExecutorRouteStrategyType `json:"executorRouteStrategy"`  //执行策略
-	CronGenDisplay         string                    `json:"cronGen_display"`        //crontab表达式
-	JobCron                string                    `json:"jobCron"`                //crontab表达式
-	ChildJobId             string                    `json:"childJobId"`             //子任务id
-	Author                 string                    `json:"author"`                 //责任人
-	AlarmEmail             string                    `json:"alarmEmail"`             //提醒邮件
-	ExecutorHandler        string                    `json:"executorHandler"`        //任务标识
-	ExecutorParams         string                    `json:"executorParam"`          // 任务参数
-	ExecutorBlockStrategy  ExecutorBlockStrategy     `json:"executorBlockStrategy"`  // 任务阻塞策略
 	ExecutorTimeout        int64                     `json:"executorTimeout"`        // 任务超时时间，单位秒，大于零时生效
 	ExecutorFailRetryCount int64                     `json:"executorFailRetryCount"` // 任务超时重试次数
-	GlueType               string                    `json:"glueType"`               // 任务模式，可选值参考 com.xxl.job.core.glue.GlueTypeEnum
-	GlueSource             string                    `json:"glueSource"`             // GLUE脚本代码
-	GlueRemark             string                    `json:"glueRemark"`             // GLUE脚本标注
+	JobDesc                string                    `json:"jobDesc"`                //任务描述
+	ExecutorRouteStrategy  ExecutorRouteStrategyType `json:"executorRouteStrategy"`  //执行策略
+	ScheduleType           string                    `json:"scheduleType"`
+	CronGenDisplay         string                    `json:"cronGen_display"`       //crontab表达式
+	JobCron                string                    `json:"jobCron"`               //crontab表达式
+	ChildJobId             string                    `json:"childJobId"`            //子任务id
+	Author                 string                    `json:"author"`                //责任人
+	AlarmEmail             string                    `json:"alarmEmail"`            //提醒邮件
+	ExecutorHandler        string                    `json:"executorHandler"`       //任务标识
+	ExecutorParams         string                    `json:"executorParam"`         // 任务参数
+	ExecutorBlockStrategy  ExecutorBlockStrategy     `json:"executorBlockStrategy"` // 任务阻塞策略
+	GlueType               string                    `json:"glueType"`              // 任务模式，可选值参考 com.xxl.job.core.glue.GlueTypeEnum
+	GlueSource             string                    `json:"glueSource"`            // GLUE脚本代码
+	GlueRemark             string                    `json:"glueRemark"`            // GLUE脚本标注
 }
 
 //	"code": 200,
@@ -90,7 +100,6 @@ type RespAddJob struct {
 	Content string `json:"content"`
 }
 
-//动态增加一个任务
 func (e *executor) AddJob(taskInfo AddJobInfo) (respBody []byte, err error) {
 	param, err := json.Marshal(taskInfo)
 	if err != nil {
@@ -98,6 +107,7 @@ func (e *executor) AddJob(taskInfo AddJobInfo) (respBody []byte, err error) {
 		return
 	}
 	res, err := e.post(addJobPath, string(param))
+	//e.log.Info("任务增加ready:" + string(param))
 	if err != nil {
 		e.log.Error("[err]AddJob err : ", err.Error())
 		return
@@ -107,11 +117,11 @@ func (e *executor) AddJob(taskInfo AddJobInfo) (respBody []byte, err error) {
 		e.log.Error("[err]AddJob: ReadAll err : ", err.Error())
 		return
 	}
+	defer res.Body.Close()
 	e.log.Info("任务增加成功:" + string(body))
 	return body, err
 }
 
-//停止一个任务
 func (e *executor) StopJob(jobID int) {
 	param, err := json.Marshal(map[string]interface{}{"id": jobID})
 	if err != nil {
@@ -128,4 +138,35 @@ func (e *executor) StopJob(jobID int) {
 		e.log.Error("[err]StopJob: ReadAll err : ", err.Error())
 	}
 	e.log.Info("任务停止成功:" + string(body))
+}
+
+//启动一个任务
+func (e *executor) StartJob(jobID int) {
+	res, err := e.postForm(StartJobPath, map[string]interface{}{"id": fmt.Sprint(jobID)})
+	if err != nil {
+		e.log.Error("[err]StartJob err : ", err.Error())
+		return
+	}
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		e.log.Error("[err]StartJob: ReadAll err : ", err.Error())
+	}
+	e.log.Info("任务启动成功:" + string(body))
+}
+
+//AddJobByPostForm 动态增加任务
+func (e *executor) AddJobByPostForm(taskInfo AddJobInfo) (respBody []byte, err error) {
+	res, err := e.postForm(addJobPath, structs.Map(taskInfo))
+	if err != nil {
+		e.log.Error("[err]AddJobByPostForm err : ", err.Error())
+		return
+	}
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		e.log.Error("[err]AddJobByPostForm: ReadAll err : ", err.Error())
+		return
+	}
+	e.log.Info("任务增加成功:" + string(body))
+	defer res.Body.Close()
+	return body, err
 }

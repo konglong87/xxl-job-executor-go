@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -32,7 +33,11 @@ type Executor interface {
 	//运行服务
 	Run() error
 	//动态增加一个任务
-	AddJob(taskInfo AddJobInfo)([]byte, error)
+	AddJob(taskInfo AddJobInfo) ([]byte, error)
+
+	AddJobByPostForm(taskInfo AddJobInfo) (respBody []byte, err error)
+
+	StartJob(jobID int)
 }
 
 //创建执行器
@@ -221,7 +226,7 @@ func (e *executor) registry() {
 		RegistryKey:   e.opts.RegistryKey,
 		RegistryValue: "http://" + e.address,
 	}
-	if e.opts.AccessToken != ""{
+	if e.opts.AccessToken != "" {
 		req.AccessToken = e.opts.AccessToken
 	}
 	param, err := json.Marshal(req)
@@ -321,7 +326,6 @@ func (e *executor) TaskLog(writer http.ResponseWriter, request *http.Request) {
 	e.taskLog(writer, request)
 }
 
-
 //taskLog
 func (e *executor) TestPanic(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("[TestPanic]进来了")
@@ -346,6 +350,15 @@ func (e *executor) TestResp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	e.log.Info("[TestResp] 任务参数:%v", param)
-	fmt.Println("[TestResp]this is TestResp, uri=",request.RequestURI)
+	fmt.Println("[TestResp]this is TestResp, uri=", request.RequestURI)
 	writer.Write([]byte("[TestResp] xxl ok "))
+}
+
+//post
+func (e *executor) postForm(action string, data map[string]interface{}) (resp *http.Response, err error) {
+	reqForm := make(url.Values)
+	for k, v := range data {
+		reqForm.Add(k, fmt.Sprint(v))
+	}
+	return http.PostForm(e.opts.ServerAddr+action, reqForm)
 }
