@@ -360,5 +360,7 @@ func (e *executor) postForm(action string, data map[string]interface{}) (resp *h
 	for k, v := range data {
 		reqForm.Add(k, fmt.Sprint(v))
 	}
+	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	request.Header.Set("XXL-JOB-ACCESS-TOKEN", e.opts.AccessToken)
 	return http.PostForm(e.opts.ServerAddr+action, reqForm)
 }

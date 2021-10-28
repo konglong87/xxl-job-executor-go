@@ -142,7 +142,9 @@ func (e *executor) StopJob(jobID int) {
 
 //启动一个任务
 func (e *executor) StartJob(jobID string) (respBody []byte, err error) {
-	res, err := e.postForm(StartJobPath, map[string]interface{}{"id": fmt.Sprint(jobID)})
+	param := map[string]interface{}{"id": fmt.Sprint(jobID)}
+	res, err := e.postForm(StartJobPath, param)
+	e.log.Info("任务增加 StartJob:", param)
 	if err != nil {
 		e.log.Error("[err]StartJob err : ", err.Error())
 		return
@@ -160,7 +162,10 @@ func (e *executor) StartJob(jobID string) (respBody []byte, err error) {
 
 //AddJobByPostForm 动态增加任务
 func (e *executor) AddJobByPostForm(taskInfo AddJobInfo) (respBody []byte, err error) {
-	res, err := e.postForm(addJobPath, structs.Map(taskInfo))
+	param := structs.Map(taskInfo)
+	res, err := e.postForm(addJobPath, param)
+	e.log.Info("任务增加 AddJobByPostForm:", param)
+
 	if err != nil {
 		e.log.Error("[err]AddJobByPostForm err : ", err.Error())
 		return
