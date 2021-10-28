@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 
-var jobPathPrefix string = "/xxl-job-new/jobinfo"
+var jobPathPrefix string = "/jobinfo"
 
 func SetJobPathPrefix(pathDefault string) {
 	jobPathPrefix = pathDefault
@@ -46,11 +46,15 @@ const (
 
 //阻塞处理策略
 type ExecutorBlockStrategy string
+type MisfireStrategy string
 
 const (
 	SerialExecutionBlockStrategy ExecutorBlockStrategy = "SERIAL_EXECUTION" //单机串行
 	DiscardLaterBlockStrategy    ExecutorBlockStrategy = "DISCARD_LATER"    //丢弃后续调度
 	CoverEarlyBlockStrategy      ExecutorBlockStrategy = "COVER_EARLY"      //覆盖之前调度
+
+	MisfireStrategyNothing MisfireStrategy = "DO_NOTHING"
+	MisfireStrategyOnce    MisfireStrategy = "FIRE_ONCE_NOW"
 )
 
 //{
@@ -72,23 +76,25 @@ const (
 //		"glueSource": ""
 //}
 type AddJobInfo struct {
-	JobGroupID             int                       `json:"jobGroup"`               //任务组id
-	ExecutorTimeout        int64                     `json:"executorTimeout"`        // 任务超时时间，单位秒，大于零时生效
-	ExecutorFailRetryCount int64                     `json:"executorFailRetryCount"` // 任务超时重试次数
-	JobDesc                string                    `json:"jobDesc"`                //任务描述
-	ExecutorRouteStrategy  ExecutorRouteStrategyType `json:"executorRouteStrategy"`  //执行策略
-	ScheduleType           string                    `json:"scheduleType"`
-	CronGenDisplay         string                    `json:"cronGen_display"`       //crontab表达式
-	JobCron                string                    `json:"jobCron"`               //crontab表达式
-	ChildJobId             string                    `json:"childJobId"`            //子任务id
-	Author                 string                    `json:"author"`                //责任人
-	AlarmEmail             string                    `json:"alarmEmail"`            //提醒邮件
-	ExecutorHandler        string                    `json:"executorHandler"`       //任务标识
-	ExecutorParams         string                    `json:"executorParam"`         // 任务参数
-	ExecutorBlockStrategy  ExecutorBlockStrategy     `json:"executorBlockStrategy"` // 任务阻塞策略
-	GlueType               string                    `json:"glueType"`              // 任务模式，可选值参考 com.xxl.job.core.glue.GlueTypeEnum
-	GlueSource             string                    `json:"glueSource"`            // GLUE脚本代码
-	GlueRemark             string                    `json:"glueRemark"`            // GLUE脚本标注
+	JobGroupID             int                       `json:"jobGroup" structs:"jobGroup"`                             //任务组id
+	ExecutorTimeout        int64                     `json:"executorTimeout" structs:"executorTimeout"`               // 任务超时时间，单位秒，大于零时生效
+	ExecutorFailRetryCount int64                     `json:"executorFailRetryCount" structs:"executorFailRetryCount"` // 任务超时重试次数
+	JobDesc                string                    `json:"jobDesc" structs:"jobDesc"`                               //任务描述
+	ExecutorRouteStrategy  ExecutorRouteStrategyType `json:"executorRouteStrategy" structs:"executorRouteStrategy"`   //执行策略
+	ScheduleType           string                    `json:"scheduleType" structs:"scheduleType"`
+	ScheduleConf           string                    `json:"scheduleConf" structs:"scheduleConf"`
+	CronGenDisplay         string                    `json:"cronGen_display" structs:"cronGen_display"`             //crontab表达式
+	JobCron                string                    `json:"jobCron" structs:"jobCron"`                             //crontab表达式
+	ChildJobId             string                    `json:"childJobId" structs:"childJobId"`                       //子任务id
+	Author                 string                    `json:"author" structs:"author"`                               //责任人
+	AlarmEmail             string                    `json:"alarmEmail" structs:"alarmEmail"`                       //提醒邮件
+	ExecutorHandler        string                    `json:"executorHandler" structs:"executorHandler"`             //任务标识
+	ExecutorParams         string                    `json:"executorParam" structs:"executorParam"`                 // 任务参数
+	ExecutorBlockStrategy  ExecutorBlockStrategy     `json:"executorBlockStrategy" structs:"executorBlockStrategy"` // 任务阻塞策略
+	GlueType               string                    `json:"glueType" structs:"glueType"`                           // 任务模式，可选值参考 com.xxl.job.core.glue.GlueTypeEnum
+	GlueSource             string                    `json:"glueSource" structs:"glueSource"`                       // GLUE脚本代码
+	GlueRemark             string                    `json:"glueRemark" structs:"glueRemark"`                       // GLUE脚本标注
+	MisfireStrategy        MisfireStrategy           `json:"misfireStrategy" structs:"misfireStrategy"`
 }
 
 //	"code": 200,

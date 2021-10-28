@@ -360,5 +360,18 @@ func (e *executor) postForm(action string, data map[string]interface{}) (resp *h
 	for k, v := range data {
 		reqForm.Add(k, fmt.Sprint(v))
 	}
+	//return http.DefaultClient.Post(e.opts.ServerAddr+action, "application/json;charset=UTF-8", strings.NewReader(reqForm.Encode()))
+	//request, err := http.NewRequest("POST", e.opts.ServerAddr+action, strings.NewReader(reqForm.Encode()))
+	//if err != nil {
+	//	return nil, err
+	//}
+	////request.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	//request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	//request.Header.Set("XXL-JOB-ACCESS-TOKEN", e.opts.AccessToken)
+	//request.Header.Set("HOST", "go-xxl")
+	//client := http.Client{
+	//	Timeout: e.opts.Timeout,
+	//}
+	//return client.Do(request)
 	return http.PostForm(e.opts.ServerAddr+action, reqForm)
 }
