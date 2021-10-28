@@ -141,7 +141,7 @@ func (e *executor) StopJob(jobID int) {
 }
 
 //启动一个任务
-func (e *executor) StartJob(jobID string) {
+func (e *executor) StartJob(jobID string) (respBody []byte, err error) {
 	res, err := e.postForm(StartJobPath, map[string]interface{}{"id": fmt.Sprint(jobID)})
 	if err != nil {
 		e.log.Error("[err]StartJob err : ", err.Error())
@@ -150,8 +150,12 @@ func (e *executor) StartJob(jobID string) {
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		e.log.Error("[err]StartJob: ReadAll err : ", err.Error())
+		return nil, err
 	}
+	defer res.Body.Close()
+
 	e.log.Info("任务启动成功:" + string(body))
+	return body, nil
 }
 
 //AddJobByPostForm 动态增加任务
