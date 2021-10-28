@@ -37,7 +37,7 @@ type Executor interface {
 
 	AddJobByPostForm(taskInfo AddJobInfo) (respBody []byte, err error)
 
-	StartJob(jobID string)
+	StartJob(jobID string) (respBody []byte, err error)
 }
 
 //创建执行器
