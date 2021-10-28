@@ -354,7 +354,7 @@ func (e *executor) TestResp(writer http.ResponseWriter, request *http.Request) {
 	writer.Write([]byte("[TestResp] xxl ok "))
 }
 
-//post
+//postForm
 func (e *executor) postForm(action string, data map[string]interface{}) (resp *http.Response, err error) {
 	reqForm := make(url.Values)
 	for k, v := range data {
